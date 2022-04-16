@@ -123,7 +123,6 @@ def add_product():
             db_product.product_quantity = quantity
             db_product.date_updated = date_cleaned
     session.commit()
-    
 
 
 def create_backup():
