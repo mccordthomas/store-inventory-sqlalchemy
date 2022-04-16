@@ -29,7 +29,7 @@ def clean_price(price_str):
             price = price_str.split('$')
             price_float = Decimal(price[1])
         else:
-            price_float = Decimal(price)
+            price_float = Decimal(price_str)
     except ValueError:
         '''
         \rValue Error:
@@ -113,8 +113,17 @@ def add_product():
         date_cleaned = clean_date(date)
         if type(date_cleaned) == datetime:
             adding_date = False
-    new_product = Product(product_name=name, product_price=price_cleaned, product_quantity=quantity, date_updated=date_cleaned)
-    session.add(new_product)
+    db_product = session.query(Product).filter(Product.product_name==name).one_or_none()
+    if db_product == None:
+        new_product = Product(product_name=name, product_price=price_cleaned, product_quantity=quantity, date_updated=date_cleaned)
+        session.add(new_product)
+    else:
+        if db_product.date_updated < datetime.date(date_cleaned):
+            db_product.product_price = price_cleaned
+            db_product.product_quantity = quantity
+            db_product.date_updated = date_cleaned
+    session.commit()
+    
 
 
 def create_backup():
