@@ -1,7 +1,6 @@
 from models import Base, session, Product, engine
 import csv, time
 from datetime import datetime
-from decimal import Decimal
 
 
 def menu():
@@ -27,30 +26,45 @@ def clean_price(price_str):
     try:
         if '$' in price_str:
             price = price_str.split('$')
-            price_float = Decimal(price[1])
+            price_float = float(price[1])
         else:
-            price_float = Decimal(price_str)
+            price_float = float(price_str)
     except ValueError:
-        '''
+        input('''
         \rValue Error:
-        \rPlease enter the price without the '$',
-        like: 1.50
+        \rPlease enter a valid number
+        \rand the price without the '$', like: 1.50
         \rPress enter to try again
-        '''
+        ''')
         return
-    return int(price_float * 100)
+    else:
+        return int(price_float * 100)
 
 
 def clean_date(date):
     try:
         date_cleaned = datetime.strptime(date, "%m/%d/%Y")
-    except TypeError:
-        '''
+    except (TypeError, ValueError) as err:
+        input('''
         \rDate Error:
         \rPlease enter the date in month/day/year format,
         \rex. 01/01/2018
-        '''
-    return date_cleaned
+        \rPress enter to try again
+        ''')
+    else:
+        return date_cleaned
+
+
+def clean_quantity(quantity):
+    try:
+        clean_quantity = int(quantity)
+    except ValueError:
+        input('''\nValue Error:
+                \rPlease enter a number 
+                \rPress enter to continue
+                \r''')
+    else:
+        return clean_quantity
 
 
 def clean_choice(choice, options):
@@ -106,7 +120,12 @@ def add_product():
         price_cleaned = clean_price(price)
         if type(price_cleaned) == int:
             adding_price = False
-    quantity = input('Quantity: ')
+    adding_quantity = True
+    while adding_quantity:
+        quantity = input('Quantity: ')
+        quantity_cleaned = clean_quantity(quantity)
+        if type(quantity_cleaned) == int:
+            adding_quantity = False
     adding_date = True
     while adding_date:
         date = input('Date (ex. 01/01/2018): ')
@@ -122,7 +141,7 @@ def add_product():
             db_product.product_price = price_cleaned
             db_product.product_quantity = quantity
             db_product.date_updated = date_cleaned
-    session.commit()
+    # session.commit()
 
 
 def create_backup():
